@@ -11,10 +11,6 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\CustomerRegisteredOtp;
 use App\Http\Requests\RegisterOTPRequest;
 use App\Models\API\Customer_otp;
-use App\Http\Requests\customerLoginRequest;
-use App\Mail\CustomerLoginOtp;
-
-
 
 class CustomerController extends Controller
 {
@@ -74,68 +70,6 @@ public function validateCustomerRegisterOTP(RegisterOTPRequest $request)
 }
 
 
-public function Customer_login(customerLoginRequest $request)
+public function Customer_Register(customerSignupRequest $request)
 {
-    // Retrieve customer data from the request
-    $email = $request->email;
-    $password = $request->password;
-
-    // Check if the customer exists
-    $customer = Customer::where('email', $email)->first();
-
-    if (!$customer) {
-        return response()->json(['success' => false, 'message' => 'Customer not found'], 404);
-    }
-
-    // Check if the password is correct
-    if (!Hash::check($password, $customer->password)) {
-        return response()->json(['success' => false, 'message' => 'Invalid password'], 401);
-    }
-
-    // Generate a random OTP
-    $otp = rand(1000, 9999);
-
-    // Save the OTP to the database
-    $data=Customer_otp::create([
-        'otp' => $otp,
-        'customer_id' => $customer->email,
-    ]);
-
-    // Send the OTP to the customer's email address
-    Mail::to($customer->email)->send(new CustomerLoginOtp($otp, $customer->firstname));
-
-    // Return a success response with the OTP
-    return response()->json(['success' => true, 'message' => 'An OTP has been sent to your email address. OTP expires after 15 minutes.', 'data' => $data], 200);
-}
-
-public function validateCustomerLoginOTP(RegisterOTPRequest $request)
-{
-    // Retrieve the OTP and email from the request
-    $otp = $request->otp;
-    $email = $request->email;
-
-    // Check if the customer exists
-    $customer = Customer::where('email', $email)->first();
-
-    if (!$customer) {
-        return response()->json(['success' => false, 'message' => 'Customer not found'], 404);
-    }
-
-    // Check if the OTP is valid
-    $otpRecord = Customer_otp::where('otp', $otp)->where('customer_id', $email)->where('created_at', '>=', now()->subMinutes(15)) // Only consider OTPs created in the last 15 minutes
-    ->first();
-
-    if (!$otpRecord) {
-        return response()->json(['success' => false, 'message' => 'Invalid OTP or OTP has expired'], 401);
-    }
-
-    // Delete the OTP record
-    $otpRecord->delete();
-
-    // Generate a new token for the customer
-    $token = $customer->createToken('Customer_login')->plainTextToken;
-
-    // Return a success response with the token
-    return response()->json(['success' => true, 'message' => 'OTP validated successfully and login complete', 'token' => $token, 'data'=> $otpRecord], 201);
-}
 }

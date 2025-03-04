@@ -12,8 +12,6 @@ use App\Mail\CustomerRegisteredOtp;
 use App\Http\Requests\RegisterOTPRequest;
 use App\Models\API\Customer_otp;
 use App\Http\Requests\customerLoginRequest;
-use App\Mail\CustomerLoginOtp;
-
 
 
 class CustomerController extends Controller
@@ -102,15 +100,15 @@ public function Customer_login(customerLoginRequest $request)
     ]);
 
     // Send the OTP to the customer's email address
-    Mail::to($customer->email)->send(new CustomerLoginOtp($otp, $customer->firstname));
+    Mail::to($customer->email)->send(new CustomerRegisteredOtp($otp, $customer->firstname));
 
     // Return a success response with the OTP
-    return response()->json(['success' => true, 'message' => 'An OTP has been sent to your email address. OTP expires after 15 minutes.', 'data' => $data], 200);
+    return response()->json(['success' => true, 'message' => 'An OTP has been sent to your email address. OTP expires after 1 minutes.', 'data' => $data], 200);
 }
 
 public function validateCustomerLoginOTP(RegisterOTPRequest $request)
 {
-    // Retrieve the OTP and email from the request
+    // Retrieve the OTP and customer ID from the request
     $otp = $request->otp;
     $email = $request->email;
 
@@ -136,6 +134,6 @@ public function validateCustomerLoginOTP(RegisterOTPRequest $request)
     $token = $customer->createToken('Customer_login')->plainTextToken;
 
     // Return a success response with the token
-    return response()->json(['success' => true, 'message' => 'OTP validated successfully and login complete', 'token' => $token, 'data'=> $otpRecord], 201);
+    return response()->json(['success' => true, 'message' => 'OTP validated successfully and login complete', 'token' => $token, ''], 200);
 }
 }

@@ -12,8 +12,6 @@ use App\Mail\CustomerRegisteredOtp;
 use App\Http\Requests\RegisterOTPRequest;
 use App\Models\API\Customer_otp;
 use App\Http\Requests\customerLoginRequest;
-use App\Mail\CustomerLoginOtp;
-
 
 
 class CustomerController extends Controller
@@ -87,12 +85,10 @@ public function Customer_login(customerLoginRequest $request)
         return response()->json(['success' => false, 'message' => 'Customer not found'], 404);
     }
 
-    // Check if the password is correct
     if (!Hash::check($password, $customer->password)) {
         return response()->json(['success' => false, 'message' => 'Invalid password'], 401);
     }
 
-    // Generate a random OTP
     $otp = rand(1000, 9999);
 
     // Save the OTP to the database
@@ -102,27 +98,27 @@ public function Customer_login(customerLoginRequest $request)
     ]);
 
     // Send the OTP to the customer's email address
-    Mail::to($customer->email)->send(new CustomerLoginOtp($otp, $customer->firstname));
+    Mail::to($customer->email)->send(new CustomerRegisteredOtp($otp, $customer->firstname));
 
     // Return a success response with the OTP
-    return response()->json(['success' => true, 'message' => 'An OTP has been sent to your email address. OTP expires after 15 minutes.', 'data' => $data], 200);
+    return response()->json(['success' => true, 'message' => 'An OTP has been sent to your email address. OTP expires after 1 minutes.', 'data' => $data], 200);
 }
 
-public function validateCustomerLoginOTP(RegisterOTPRequest $request)
+public function validateCustomerLoginOTP(Request $request)
 {
-    // Retrieve the OTP and email from the request
+    // Retrieve the OTP and customer ID from the request
     $otp = $request->otp;
-    $email = $request->email;
+    $customer_id = $request->customer_id;
 
     // Check if the customer exists
-    $customer = Customer::where('email', $email)->first();
+    $customer = Customer::where('email', $customer_id)->first();
 
     if (!$customer) {
         return response()->json(['success' => false, 'message' => 'Customer not found'], 404);
     }
 
     // Check if the OTP is valid
-    $otpRecord = Customer_otp::where('otp', $otp)->where('customer_id', $email)->where('created_at', '>=', now()->subMinutes(15)) // Only consider OTPs created in the last 15 minutes
+    $otpRecord = Customer_otp::where('otp', $otp)->where('customer_id', $customer_id)->where('created_at', '>=', now()->subMinutes(15)) // Only consider OTPs created in the last 15 minutes
     ->first();
 
     if (!$otpRecord) {
@@ -136,6 +132,6 @@ public function validateCustomerLoginOTP(RegisterOTPRequest $request)
     $token = $customer->createToken('Customer_login')->plainTextToken;
 
     // Return a success response with the token
-    return response()->json(['success' => true, 'message' => 'OTP validated successfully and login complete', 'token' => $token, 'data'=> $otpRecord], 201);
+    return response()->json(['success' => true, 'message' => 'OTP validated successfully and login complete', 'token' => $token], 200);
 }
 }

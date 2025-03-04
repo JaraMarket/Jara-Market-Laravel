@@ -12,9 +12,7 @@ use App\Mail\CustomerRegisteredOtp;
 use App\Http\Requests\RegisterOTPRequest;
 use App\Models\API\Customer_otp;
 use App\Http\Requests\customerLoginRequest;
-use App\Mail\CustomerLoginOtp;
-
-
+use customerLoginRequest
 
 class CustomerController extends Controller
 {
@@ -105,7 +103,7 @@ public function Customer_login(customerLoginRequest $request)
     Mail::to($customer->email)->send(new CustomerLoginOtp($otp, $customer->firstname));
 
     // Return a success response with the OTP
-    return response()->json(['success' => true, 'message' => 'An OTP has been sent to your email address. OTP expires after 15 minutes.', 'data' => $data], 200);
+    return response()->json(['success' => true, 'message' => 'An OTP has been sent to your email address. OTP expires after 1 minutes.', 'data' => $data], 200);
 }
 
 public function validateCustomerLoginOTP(RegisterOTPRequest $request)
