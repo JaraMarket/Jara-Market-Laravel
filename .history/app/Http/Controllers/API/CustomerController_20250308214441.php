@@ -13,67 +13,62 @@ use App\Http\Requests\RegisterOTPRequest;
 use App\Models\API\Customer_otp;
 use App\Http\Requests\customerLoginRequest;
 use App\Mail\CustomerLoginOtp;
-use Illuminate\Support\Facades\Cache;
-
-
+use str_random(
+    
+)
 class CustomerController extends Controller
 {
 
     public function Customer_Register(customerSignupRequest $request)
-{
-    $referralCode = $request->input('referral_code');
+    {
+        // Check if a referral code is provided
+        $referralCode = $request->input('referral_code');
 
-   // Register the Customer
-    $data = Customer::create([
-        'firstname' => $request->firstname,
-        'lastname' => $request->lastname,
-        'email' => $request->email,
-        'password' => Hash::make($request->password),
-        'referral_code' => substr(str_shuffle('0123456789'), 0, 4)
-    ]);
+        // Register the Customer
+        $data = Customer::create([
+            'firstname' => $request->firstname,
+            'lastname' => $request->lastname,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'referral_code' => str_random(10), // Generate a unique referral code for the customer
+        ]);
 
-    // If a referral code is provided, validate it and update the referrer's account
-    if ($referralCode) {
-        $referrer = Customer::where('referral_code', $referralCode)->first();
+        // If a referral code is provided, validate it and update the referrer's account
+        if ($referralCode) {
+            $referrer = Customer::where('referral_code', $referralCode)->first();
 
-        if ($referrer) {
-            // Update the referrer's account (e.g., increment their referral count)
-            $referrer->update([
-                'referral_count' => $referrer->referral_count + 1,
-            ]);
+            if ($referrer) {
+                // Update the referrer's account (e.g., increment their referral count)
+                $referrer->update([
+                    'referral_count' => $referrer->referral_count + 1,
+                ]);
 
-            // Update the customer's account to link them to the referrer
-            $data->update([
-                'referrer_id' => $referrer->id,
-            ]);
-
-            // Update the referrer's wallet with a bonus
-            $referrer->update([
-                'wallet' => $referrer->wallet + 10
-
-            ]);
-        } else {
-            // Return an error if the referral code is invalid
-            return response()->json(['success' => false, 'message' => 'Invalid referral code'], 400);
+                // Update the customer's account to link them to the referrer
+                $data->update([
+                    'referrer_id' => $referrer->id,
+                ]);
+            } else {
+                // Return an error if the referral code is invalid
+                return response()->json(['success' => false, 'message' => 'Invalid referral code'], 400);
+            }
         }
-    }
 
         // Generate OTP and save
-    $otp = rand(1000, 9999); // Generate a 4-digit OTP
+        $otp = rand(1000, 9999); // Generate a 4-digit OTP
 
-    Customer_otp::create([
-        'otp' => $otp,
-        'customer_id' => $data->email, // Use the customer ID instead of email
-    ]);
+        Customer_otp::create([
+            'otp' => $otp,
+            'customer_id' => $data->email, // Use the customer ID instead of email
+        ]);
 
-    // Send OTP via email
-    Mail::to($data->email)->send(new CustomerRegisteredOtp($otp, $data->firstname));
+        // Send OTP via email
+        Mail::to($data->email)->send(new CustomerRegisteredOtp($otp, $data->firstname));
 
-    $token = $data->createToken('Customer_signUp')->plainTextToken;
+        $token = $data->createToken('Customer_signUp')->plainTextToken;
 
-    // Return success response
-    return response()->json(['message' => 'An OTP has been sent to your email address. It expires after 15 minutes.', 'token' => $token, 'data' => $data], 201);
-}
+        // Return success response
+        return response()->json(['message' => 'An OTP has been sent to your email address. It expires after 15 minutes.', 'token' => $token, 'data' => $data], 201);
+    }
 
     public function validateCustomerRegisterOTP(RegisterOTPRequest $request)
     {
@@ -173,20 +168,15 @@ public function validateCustomerLoginOTP(RegisterOTPRequest $request)
 }
 
 public function fetchProfile($email)
-{
-    $cacheKey = 'customer-profile-' . $email;
-    $cacheTime = 60; // Cache for 1 hour
+    {
 
-    $data = Cache::remember($cacheKey, $cacheTime, function () use ($email) {
-        return Customer::where('email', $email)->first();
-    });
-
-    if ($data) {
-        return response()->json($data, 201);
-    } else {
-        return response()->json(['success' => false, 'message' => 'customer data not found'], 404);
+        $data = Customer::where('email', $email)->first();
+        if ($data) {
+            return response()->json($data, 201);
+        } else {
+            return response()->json(['success' => false, 'message' => 'customer data not found'], 404);
+        }
     }
-}
 
     public function editProfile($email, Request $request)
     {

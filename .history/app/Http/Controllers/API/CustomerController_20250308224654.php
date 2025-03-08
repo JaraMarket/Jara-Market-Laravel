@@ -13,7 +13,6 @@ use App\Http\Requests\RegisterOTPRequest;
 use App\Models\API\Customer_otp;
 use App\Http\Requests\customerLoginRequest;
 use App\Mail\CustomerLoginOtp;
-use Illuminate\Support\Facades\Cache;
 
 
 class CustomerController extends Controller

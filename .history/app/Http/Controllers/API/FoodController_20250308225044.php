@@ -41,14 +41,11 @@ class FoodController extends Controller
         return response()->json(['error' => 'Food ID is required'], 422);
     }
 
-    // Use caching to store the result of the query
-    $ingredients = Cache::remember("ingredients-$foodId", 60, function () use ($foodId) {
-        return DB::table('ingredients')
-            ->join('food_ingredients', 'ingredients.id', '=', 'food_ingredients.ingredient_id')
-            ->where('food_ingredients.food_id', $foodId)
-            ->select('ingredients.*')
-            ->get();
-    });
+    $ingredients = DB::table('ingredients')
+        ->join('food_ingredients', 'ingredients.id', '=', 'food_ingredients.ingredient_id')
+        ->where('food_ingredients.food_id', $foodId)
+        ->select('ingredients.*')
+        ->get();
 
     // If no ingredients are found, return an error
     if ($ingredients->isEmpty()) {

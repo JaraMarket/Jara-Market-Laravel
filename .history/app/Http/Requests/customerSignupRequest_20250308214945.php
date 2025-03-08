@@ -26,8 +26,7 @@ class customerSignupRequest extends FormRequest
             "lastname" => "required|string|max:30",
             "email" => "required|email|max:255|unique:customers,email",
             "password" => "required|min:8",
-            'referral_code' => 'nullable|string|exists:customers,referral_code',
-
+        
         ];
     }
 
@@ -46,7 +45,6 @@ class customerSignupRequest extends FormRequest
             'email.unique' => 'This email is already registered. Please use a different one.',
             'password.required' => 'A password is required.',
             'password.min' => 'Your password must be at least 8 characters long.',
-//
         ];
     }
 }

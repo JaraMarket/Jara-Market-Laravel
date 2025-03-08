@@ -46,7 +46,6 @@ class customerSignupRequest extends FormRequest
             'email.unique' => 'This email is already registered. Please use a different one.',
             'password.required' => 'A password is required.',
             'password.min' => 'Your password must be at least 8 characters long.',
-//
         ];
     }
 }

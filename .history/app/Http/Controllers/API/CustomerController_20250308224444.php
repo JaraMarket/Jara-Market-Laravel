@@ -13,7 +13,7 @@ use App\Http\Requests\RegisterOTPRequest;
 use App\Models\API\Customer_otp;
 use App\Http\Requests\customerLoginRequest;
 use App\Mail\CustomerLoginOtp;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 
 class CustomerController extends Controller
@@ -21,6 +21,7 @@ class CustomerController extends Controller
 
     public function Customer_Register(customerSignupRequest $request)
 {
+    // Check if a referral code is provided
     $referralCode = $request->input('referral_code');
 
    // Register the Customer
@@ -173,20 +174,15 @@ public function validateCustomerLoginOTP(RegisterOTPRequest $request)
 }
 
 public function fetchProfile($email)
-{
-    $cacheKey = 'customer-profile-' . $email;
-    $cacheTime = 60; // Cache for 1 hour
+    {
 
-    $data = Cache::remember($cacheKey, $cacheTime, function () use ($email) {
-        return Customer::where('email', $email)->first();
-    });
-
-    if ($data) {
-        return response()->json($data, 201);
-    } else {
-        return response()->json(['success' => false, 'message' => 'customer data not found'], 404);
+        $data = Customer::where('email', $email)->first();
+        if ($data) {
+            return response()->json($data, 201);
+        } else {
+            return response()->json(['success' => false, 'message' => 'customer data not found'], 404);
+        }
     }
-}
 
     public function editProfile($email, Request $request)
     {
