@@ -48,7 +48,7 @@ class CustomerController extends Controller
             ]);
 
             // Update the referrer's wallet with a bonus
-            $referral_bonus = config('app.referral_bonus');
+            $referralBonus = config('customer.referral_bonus');
 
             $referrer->update([
                 'wallet' => $referrer->wallet + $referral_bonus

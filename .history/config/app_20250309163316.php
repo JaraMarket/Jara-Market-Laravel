@@ -14,8 +14,7 @@ return [
     */
 
     'name' => env('APP_NAME', 'Laravel'),
-    'referral_bonus' => 10,
-
+    
     /*
     |--------------------------------------------------------------------------
     | Application Environment

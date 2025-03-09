@@ -48,10 +48,10 @@ class CustomerController extends Controller
             ]);
 
             // Update the referrer's wallet with a bonus
-            $referral_bonus = config('app.referral_bonus');
+            $databaseName = env('DB_DATABASE');
 
             $referrer->update([
-                'wallet' => $referrer->wallet + $referral_bonus
+                'wallet' => $referrer->wallet + 10
 
             ]);
         } else {

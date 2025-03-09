@@ -14,7 +14,7 @@ return [
     */
 
     'name' => env('APP_NAME', 'Laravel'),
-    'referral_bonus' => 10,
+        'my_variable' => env('MY_CUSTOM_VARIABLE', 'default_value'),
 
     /*
     |--------------------------------------------------------------------------
